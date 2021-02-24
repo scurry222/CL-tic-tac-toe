@@ -44,7 +44,7 @@ class Board {
     }
     win() {
         const b = this.board;
-        const p = this.player
+        const p = this.player === 1 ? 2 : 1;
         return (
             (b[0][0] === p && b[0][1] === p && b[0][2] === p) ||
             (b[1][0] === p && b[1][1] === p && b[1][2] === p) ||
@@ -58,7 +58,12 @@ class Board {
     }
  
     stalemate() {
-        return !this.board.includes(0);
+        for (let row of this.board) {
+            if (!row.includes(0)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
@@ -67,11 +72,17 @@ const gameLoop = async() => {
     let player = board.player;
     let playing = true;
     while (playing) {
-        if (!board.win(player) && !board.stalemate()) {
+        await board.printBoard();
+        if (board.win(player)) {
+            console.log(`player ${board.player === 1 ? 2 : 1} wins!`);
+            rl.close();
+            playing = false;
+
+        } else if (board.stalemate()) {
+            console.log(`stalemate!`);
             rl.close();
             playing = false;
         } else {
-            await board.printBoard();
             await board.selectPiece(player);
             board.player === 1 ? board.player = 2 : board.player = 1;
         }
