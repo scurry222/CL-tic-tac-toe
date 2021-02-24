@@ -12,43 +12,48 @@ class Board {
             [0, 0, 0],
             [0, 0, 0]
         ];
-        this.player = 'X'
+        this.player = 1;
     }
     printBoard() {
         for (let row of this.board) {
-            console.log(row);
+            process.stdout.write('[ ')
+            for (let box of row) {
+                process.stdout.write(`${box === 1 ? 'X' : box === 2 ? 'O' : '-'} `)
+            }
+            process.stdout.write(']\n');
         }
     }
-    logPiece(play, token) {
+    logPiece(play) {
         let b = this.board;
-        play === '1' ? b[0][0] = token
-        : play === '2' ? b[0][1] = token
-        : play === '3' ? b[0][2] = token
-        : play === '4' ? b[1][0] = token
-        : play === '5' ? b[1][1] = token
-        : play === '6' ? b[1][2] = token
-        : play === '7' ? b[2][0] = token
-        : play === '8' ? b[2][1] = token
-        : play === '9' ? b[2][2] = token
+        const p = this.player;
+        play === '1' && b[0][0] === 0 ? b[0][0] = p
+        : play === '2' && b[0][1] === 0 ? b[0][1] = p
+        : play === '3' && b[0][2] === 0 ? b[0][2] = p
+        : play === '4' && b[1][0] === 0 ? b[1][0] = p
+        : play === '5' && b[1][1] === 0 ? b[1][1] = p
+        : play === '6' && b[1][2] === 0 ? b[1][2] = p
+        : play === '7' && b[2][0] === 0 ? b[2][0] = p
+        : play === '8' && b[2][1] === 0 ? b[2][1] = p
+        : play === '9' && b[2][2] === 0 ? b[2][2] = p
         : console.log('please enter a valid placement');
     }
     selectPiece(player) {
-        rl.question('choose next play (1 - 9): ', (play) => {
-            this.logPiece(play, player);
-            rl.close();
-        })
+        return new Promise((resolve) => rl.question('choose next play (1 - 9): ', (play) => {
+            resolve(this.logPiece(play, player))
+        }))
     }
-    win(token) {
+    win() {
         const b = this.board;
+        const p = this.player
         return (
-            (b[0][0] === token && b[0][1] === token && b[0][2] === token) ||
-            (b[1][0] === token && b[1][1] === token && b[1][2] === token) ||
-            (b[2][0] === token && b[2][1] === token && b[2][2] === token) ||
-            (b[0][0] === token && b[1][0] === token && b[2][0] === token) ||
-            (b[0][1] === token && b[1][1] === token && b[2][1] === token) ||
-            (b[0][2] === token && b[1][2] === token && b[2][2] === token) ||
-            (b[0][0] === token && b[1][1] === token && b[2][2] === token) ||
-            (b[2][0] === token && b[1][1] === token && b[0][2] === token))
+            (b[0][0] === p && b[0][1] === p && b[0][2] === p) ||
+            (b[1][0] === p && b[1][1] === p && b[1][2] === p) ||
+            (b[2][0] === p && b[2][1] === p && b[2][2] === p) ||
+            (b[0][0] === p && b[1][0] === p && b[2][0] === p) ||
+            (b[0][1] === p && b[1][1] === p && b[2][1] === p) ||
+            (b[0][2] === p && b[1][2] === p && b[2][2] === p) ||
+            (b[0][0] === p && b[1][1] === p && b[2][2] === p) ||
+            (b[2][0] === p && b[1][1] === p && b[0][2] === p))
         ? true: false;
     }
  
@@ -57,14 +62,21 @@ class Board {
     }
 }
 
-const gameLoop = () => {
+const gameLoop = async() => {
     const board = new Board();
     let player = board.player;
-    while(!board.win(player) && !board.stalemate()) {
-        board.printBoard();
-        board.selectPiece(player);
-        player === 'X' ? 'O' : 'X';
+    let playing = true;
+    while (playing) {
+        if (!board.win(player) && !board.stalemate()) {
+            rl.close();
+            playing = false;
+        } else {
+            await board.printBoard();
+            await board.selectPiece(player);
+            board.player === 1 ? board.player = 2 : board.player = 1;
+        }
     }
+
 }
 
 gameLoop();
